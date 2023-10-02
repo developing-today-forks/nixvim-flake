@@ -4,6 +4,7 @@ modules: {
   lib,
   ...
 } @ args: let
+  pkgs = args._module.args.pkgs or pkgs;
   inherit (lib) mkEnableOption mkOption mkOptionType mkForce mkMerge mkIf types;
   shared = import ./_shared.nix modules args;
   cfg = config.programs.nixvim;
