@@ -28,23 +28,24 @@
       # TODO: Support nesting
       nixvimModules = map (f: ./modules + "/${f}") (attrNames (builtins.readDir ./modules));
 
-      modules = customPkgs:
-        let
-          # Use customPkgs if provided, otherwise fall back to default nixpkgs
-          pkgs = if customPkgs != null then customPkgs else import nixpkgs {};
-        in
-        nixvimModules ++ [
-          {
-            _file = ./flake.nix;
-            config = {
-              _module.args.pkgs = mkForce pkgs;
-              inherit (pkgs) lib;
-              helpers = import ./plugins/helpers.nix { inherit (pkgs) lib; };
-              inherit inputs;
-            };
-          }
-        ];
+  modules = pkgs:
+    nixvimModules
+    ++ [
+      {
+        _file = ./flake.nix;
+        key = ./flake.nix;
+        config = {
+          _module.args = {
+            pkgs = mkForce pkgs;  # Overriding pkgs here
+            inherit (pkgs) lib;
+            helpers = import ./plugins/helpers.nix {inherit (pkgs) lib;};
+            inherit inputs;
+          };
+        };
+      }
 
+      # ./plugins/default.nix
+    ];
       flakeOutput =
         flake-utils.lib.eachDefaultSystem
         (system: let
